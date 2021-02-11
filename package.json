@@ -1,0 +1,44 @@
+{
+  "name": "knx-netip",
+  "version": "0.1.0",
+  "description": "KNXnet/IP protocol implementation",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint src/*.js"
+  },
+  "keywords": [
+    "knx",
+    "smart home",
+    "building automation"
+  ],
+  "engines": {
+    "node": ">=12"
+  },
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jvanderneutstulen/knx-netip.js"
+  },
+  "author": {
+    "name": "Jasper van der Neut",
+    "email": "jasper@isotopic.nl"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "binary-parser": "^1.7.0",
+    "binary-protocol": "0.0.0",
+    "ipaddr.js": "^2.0.0",
+    "log-driver": "^1.2.7",
+    "machina": "^4.0.2",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "eslint": "^7.19.0",
+    "eslint-config-prettier": "^7.2.0",
+    "eslint-config-standard": "^16.0.2",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.3.1",
+    "eslint-plugin-standard": "^5.0.0"
+  }
+}
