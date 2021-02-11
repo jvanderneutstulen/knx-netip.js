@@ -546,9 +546,17 @@ module.exports = machina.Fsm.extend({
         this._options,
         callback
       );
-      this.log.trace("%j", response.datagram);
-
       if (response !== null) {
+        this.log.trace("%j", response.datagram);
+
+        if (response.datagram.hpai.tunnelEndpoint === "0.0.0.0:0") {
+          response.datagram.hpai.tunnelEndpoint = util.format(
+            "%s:%s",
+            rinfo.address,
+            rinfo.port
+          );
+        }
+
         this.handle("inbound_" + response.datagramDesc(), response.datagram);
       }
     });
