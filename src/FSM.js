@@ -210,7 +210,7 @@ module.exports = machina.Fsm.extend({
       "*": function (data) {
         this.log.trace(
           "*** deferring %s until waittime is over",
-          data.inputType0
+          data.inputType
         );
         this.deferUntilTransition("online");
       },
@@ -240,7 +240,7 @@ module.exports = machina.Fsm.extend({
       "*": function (data) {
         this.log.trace(
           "*** deferring %s until waittime is over",
-          data.inputType0
+          data.inputType
         );
         this.deferUntilTransition("online");
       },
@@ -329,6 +329,13 @@ module.exports = machina.Fsm.extend({
           );
         }
         this.transition("waiting");
+      },
+      "*": function (data) {
+        this.log.trace(
+          "*** deferring %s until done with inbound request",
+          data.inputType
+        );
+        this.deferUntilTransition();
       },
     },
 
