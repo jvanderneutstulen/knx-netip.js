@@ -5,7 +5,6 @@ const util = require("util");
 const KnxConstants = require("./KnxConstants.js");
 const KnxDatagram = require("./KnxDatagram.js");
 const KnxLog = require("./KnxLog.js");
-const DPTLib = require("./dptlib");
 
 module.exports = machina.Fsm.extend({
   initialize: function (options) {
@@ -56,7 +55,7 @@ module.exports = machina.Fsm.extend({
   states: {
     uninitialized: {
       "*": function () {
-        this.log.info("%s", this.state);
+        this.log.info("State %s", this.state);
         this.deferUntilTransition();
         this.transition("idle");
       },
@@ -64,7 +63,7 @@ module.exports = machina.Fsm.extend({
 
     idle: {
       _onEnter: function () {
-        this.log.info("%s", this.state);
+        this.log.info("State %s", this.state);
         this.emit("offline");
 
         // kill control endpoint
@@ -88,7 +87,7 @@ module.exports = machina.Fsm.extend({
 
     searching: {
       _onEnter: function () {
-        this.log.info("%s", this.state);
+        this.log.info("State %s", this.state);
 
         this.timer = setTimeout(() => {
           this.handle("timeout");
@@ -149,7 +148,7 @@ module.exports = machina.Fsm.extend({
 
     connecting: {
       _onEnter: function () {
-        this.log.info("%s", this.state);
+        this.log.info("State %s", this.state);
 
         this.timer = setTimeout(() => {
           this.handle("timeout");
@@ -193,7 +192,7 @@ module.exports = machina.Fsm.extend({
 
     connected: {
       _onEnter: function () {
-        this.log.info("%s", this.state);
+        this.log.info("State %s", this.state);
 
         this._connectionHeartbeatFailures = 0;
 
@@ -221,7 +220,7 @@ module.exports = machina.Fsm.extend({
 
     waiting: {
       _onEnter: function () {
-        this.log.info("%s", this.state);
+        this.log.info("State %s", this.state);
 
         this.timer = setTimeout(() => {
           this.handle("timeout");
@@ -248,14 +247,13 @@ module.exports = machina.Fsm.extend({
 
     online: {
       _onEnter: function () {
-        this.log.info("%s", this.state);
+        this.log.info("State %s", this.state);
       },
       disconnect: "disconnecting",
       inbound_DISCONNECT_REQUEST(datagram) {
         //        let dg = this.prepareDatagram(
         //        KnxConstants.SERVICE_TYPE.DISCONNECT_RESPONSE
         //    );
-        //  console.log(dg);
         //  this.send(this._controlSocket, this._remoteControlEndpoint, dg);
         clearInterval(this._connStateRequestTimer);
         this.transition("idle");
@@ -274,6 +272,7 @@ module.exports = machina.Fsm.extend({
 
     inbound_TUNNELING_REQUEST_L_Data: {
       _onEnter: function (datagram) {
+        this.log.info("State %s", this.state);
         if (
           datagram.tunnstate.seqnum === this._inboundSeqNum ||
           datagram.tunnstate.seqnum === (this._inboundSeqNum + 255) % 256
@@ -289,8 +288,7 @@ module.exports = machina.Fsm.extend({
             this._remoteControlEndpoint,
             ack,
             (err) => {
-              // TODO: handle send err
-              this.log.warn("ERR: %s", err);
+              this.log.warn("Error while sending ACK: %s", err);
             }
           );
 
@@ -299,7 +297,7 @@ module.exports = machina.Fsm.extend({
 
             const evtName = datagram.cemi.apdu.apci;
             const destAddr = datagram.cemi.destAddr;
-            this.log.info("Got event %s", evtName);
+            this.log.info("Got event %s for %s", evtName, destAddr);
 
             this.emit(
               util.format("%s_%s", evtName, destAddr),
@@ -324,8 +322,9 @@ module.exports = machina.Fsm.extend({
         } else {
           // IGNORE
           this.log.warn(
-            "Unexpected seqnum received %d",
-            datagram.tunnstate.seqnum
+            "Unexpected seqnum received (%d), expected %d",
+            datagram.tunnstate.seqnum,
+            this._inboundSeqNum
           );
         }
         this.transition("waiting");
@@ -341,6 +340,7 @@ module.exports = machina.Fsm.extend({
 
     outbound_CONNECTIONSTATE_REQUEST: {
       _onEnter: function () {
+        this.log.info("State %s", this.state);
         this.handle("send_CONNECTIONSTATE_REQUEST");
       },
 
@@ -360,7 +360,7 @@ module.exports = machina.Fsm.extend({
       inbound_CONNECTIONSTATE_RESPONSE(datagram) {
         clearTimeout(this._connStateTimer);
         if (datagram === null) {
-          this.log.warn("connstate response timeout");
+          this.log.warn("Connstate response timeout");
           this._connectionHeartbeatFailures++;
         } else {
           const responseCode = KnxConstants.keyText(
@@ -373,7 +373,7 @@ module.exports = machina.Fsm.extend({
             this.handle("ok");
             return;
           } else {
-            this.log.warn("connstate %s", responseCode);
+            this.log.warn("Connstate response: %s", responseCode);
             this._connectionHeartbeatFailures++;
           }
         }
@@ -400,7 +400,7 @@ module.exports = machina.Fsm.extend({
 
     outbound_TUNNELING_REQUEST: {
       _onEnter: function (datagram) {
-        this.log.info("%s", this.state);
+        this.log.info("State %s", this.state);
 
         datagram.setSeqNum(this._outboundSeqNum);
 
@@ -426,10 +426,10 @@ module.exports = machina.Fsm.extend({
       inbound_TUNNELING_ACK(datagram) {
         let responseCode = null;
         if (datagram === null) {
-          this.log.warn("ack timeout");
+          this.log.warn("ACK timeout");
           this._outboundFailures++;
         } else {
-          this.log.warn("got ack");
+          this.log.trace("got ack");
 
           const seqnum = datagram.tunnstate.seqnum;
 
@@ -502,7 +502,7 @@ module.exports = machina.Fsm.extend({
       _onEnter: function () {
         // purge all pending requests when we want to disconnect
         this.clearQueue();
-        this.log.info("%s", this.state);
+        this.log.info("State %s", this.state);
         clearInterval(this._connStateRequestTimer);
 
         this.timer = setTimeout(() => {
@@ -573,7 +573,7 @@ module.exports = machina.Fsm.extend({
     const dg = this._prepareKnxDatagram(
       KnxConstants.SERVICE_TYPE.SEARCH_REQUEST
     );
-    this.log.info("%j", dg.datagram);
+    this.log.trace("%j", dg.datagram);
     dg.send(this._discoverSocket, this._remoteDiscoverEndpoint);
   },
 
@@ -597,7 +597,7 @@ module.exports = machina.Fsm.extend({
       this.log.warn("control socket error => idle?");
     });
     socket.on("message", (msg, rinfo, callback) => {
-      this.log.notice(
+      this.log.trace(
         "Inbound control message from " +
           rinfo.address +
           ": " +
@@ -614,7 +614,7 @@ module.exports = machina.Fsm.extend({
       if (dg !== null) {
         const signal = util.format("inbound_%s", dg.datagramDesc());
         if (dg.datagramDesc() === "DISCONNECT_REQUEST") {
-          KnxLog.get().info("empty internal fsm queue due to %s: ", signal);
+          this.log.info("empty internal fsm queue due to %s: ", signal);
           this.clearQueue();
         }
         this.handle(signal, dg.datagram);
@@ -746,28 +746,6 @@ module.exports = machina.Fsm.extend({
     this.queueRequest("outbound_" + dg.getServiceType(), dg);
 
     return resultPromise;
-  },
-
-  readMyGroups: async function (groupAddress, callback) {
-    const result = await this.readPromise(groupAddress, callback);
-    console.log(result);
-
-    let dpt = "DPT1.001";
-
-    if (groupAddress === "2/100") {
-      dpt = "DPT10.001";
-    } else if (groupAddress === "2/101") {
-      dpt = "DPT11.001";
-    }
-
-    dpt = DPTLib.resolve(dpt);
-
-    console.log(DPTLib.fromBuffer(result, dpt));
-    return result;
-  },
-
-  writeGroup: function (groupAddress, value, dpt) {
-    this.write(groupAddress, value, dpt);
   },
 
   writeRaw: function (groupAddress, value, bitlength) {

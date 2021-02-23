@@ -76,7 +76,12 @@ const parse = function (
   addrtype /* TYPE */,
   twoLevelAddressing
 ) {
-  console.log("======>> %s, %s, %d", addr, addrtype, twoLevelAddressing);
+  KnxLog.get().trace(
+    "Address parse: %s, %s, %d",
+    addr,
+    addrtype,
+    twoLevelAddressing
+  );
   if (!addr) {
     KnxLog.get().warn("Fix your code - no address given to Address.parse");
   }

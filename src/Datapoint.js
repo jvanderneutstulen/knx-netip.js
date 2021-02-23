@@ -38,9 +38,7 @@ class Datapoint extends EventEmitter {
     const gaevent = util.format("event_%s", this.options.ga);
     conn.on(gaevent, (evt, src, buf) => {
       // get the Javascript value from the raw buffer, if the DPT defines fromBuffer()
-      console.log("============");
-      console.log("%s, %j", src, buf);
-      console.log("============");
+      KnxLog.get().trace("Got data from group address %s: %j", src, buf);
 
       switch (evt) {
         case "GroupValue_Write":
