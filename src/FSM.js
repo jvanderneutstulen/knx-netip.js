@@ -227,6 +227,9 @@ module.exports = machina.Fsm.extend({
         }, 50);
       },
 
+      "inbound_TUNNELING_REQUEST_L_Data.con"(datagram) {
+        this.transition("inbound_TUNNELING_REQUEST_L_Data", datagram);
+      },
       "inbound_TUNNELING_REQUEST_L_Data.ind"(datagram) {
         this.transition("inbound_TUNNELING_REQUEST_L_Data", datagram);
       },
