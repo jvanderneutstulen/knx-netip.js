@@ -642,7 +642,7 @@ module.exports = machina.Fsm.extend({
     this.handle(ev, data);
   },
 
-  read: function (groupAddress) {
+  read: function (groupAddress, maxTimeout = 5000) {
     const dg = this._prepareKnxDatagram(
       KnxConstants.SERVICE_TYPE.TUNNELING_REQUEST
     );
@@ -669,7 +669,7 @@ module.exports = machina.Fsm.extend({
 
       timeout = setTimeout(() => {
         eventHandler(null);
-      }, 5000);
+      }, maxTimeout);
     });
     dg.makeReadRequest(groupAddress);
     this.queueRequest("outbound_" + dg.getServiceType(), dg);
@@ -677,7 +677,7 @@ module.exports = machina.Fsm.extend({
     return resultPromise;
   },
 
-  readAsync: function (groupAddress) {
+  readAsync: function (groupAddress, maxTimeout = 5000) {
     const dg = this._prepareKnxDatagram(
       KnxConstants.SERVICE_TYPE.TUNNELING_REQUEST
     );
@@ -704,7 +704,7 @@ module.exports = machina.Fsm.extend({
 
       timeout = setTimeout(() => {
         eventHandler(null);
-      }, 5000);
+      }, maxTimeout);
     });
     dg.makeReadRequest(groupAddress);
     this.queueRequest("outbound_" + dg.getServiceType(), dg);
@@ -712,7 +712,7 @@ module.exports = machina.Fsm.extend({
     return resultPromise;
   },
 
-  write: function (groupAddress, value, dpt) {
+  write: function (groupAddress, value, dpt, maxTimeout = 5000) {
     const dg = this._prepareKnxDatagram(
       KnxConstants.SERVICE_TYPE.TUNNELING_REQUEST
     );
@@ -739,7 +739,7 @@ module.exports = machina.Fsm.extend({
 
       timeout = setTimeout(() => {
         eventHandler(null);
-      }, 5000);
+      }, maxTimeout);
     });
 
     dg.makeWriteRequest(groupAddress, value, dpt);
@@ -748,7 +748,7 @@ module.exports = machina.Fsm.extend({
     return resultPromise;
   },
 
-  writeRaw: function (groupAddress, value, bitlength) {
+  writeRaw: function (groupAddress, value, bitlength, maxTimeout = 5000) {
     const dg = this._prepareKnxDatagram(
       KnxConstants.SERVICE_TYPE.TUNNELING_REQUEST
     );
@@ -775,7 +775,7 @@ module.exports = machina.Fsm.extend({
 
       timeout = setTimeout(() => {
         eventHandler(null);
-      }, 5000);
+      }, maxTimeout);
     });
 
     dg.makeWriteRawRequest(groupAddress, value, bitlength);
