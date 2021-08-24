@@ -210,6 +210,26 @@ class KnxDatagram {
     });
   }
 
+  makeRespondRawRequest(grpaddr, value, bitlength) {
+    if (grpaddr == null || value == null) {
+      KnxLog.get().warn("You must supply both grpaddr and value!");
+      return;
+    }
+    if (!Buffer.isBuffer(value)) {
+      KnxLog.get().warn("Value must be a buffer!");
+      return;
+    }
+    const serviceType = this.useTunneling
+      ? KnxConstants.SERVICE_TYPE.TUNNELING_REQUEST
+      : KnxConstants.SERVICE_TYPE.ROUTING_INDICATION;
+    this._makeRequest(serviceType, function (datagram) {
+      datagram.cemi.apdu.apci = "GroupValue_Response";
+      datagram.cemi.apdu.data = value;
+      datagram.cemi.apdu.bitlength = bitlength || value.byteLength * 8;
+      datagram.cemi.destAddr = grpaddr;
+    });
+  }
+
   makeWriteRequest(grpaddr, value, dptid) {
     if (grpaddr == null || value == null) {
       KnxLog.get().warn("You must supply both grpaddr and value!");

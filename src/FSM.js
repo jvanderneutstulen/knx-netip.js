@@ -786,4 +786,40 @@ module.exports = machina.Fsm.extend({
 
     return resultPromise;
   },
+
+  respondRaw: function (groupAddress, value, bitlength, maxTimeout = 5000) {
+    const dg = this._prepareKnxDatagram(
+      KnxConstants.SERVICE_TYPE.TUNNELING_REQUEST
+    );
+
+    const resultPromise = new Promise((resolve, reject) => {
+      const responseEvent = util.format("ReceivedAck_%s", dg.uuid);
+
+      let timeout = null;
+
+      const eventHandler = (response) => {
+        this.log.trace("Handle event %s", response);
+        this.off(responseEvent, eventHandler);
+        clearTimeout(timeout);
+        if (response === null) {
+          reject(new Error("No response"));
+        } else if (response !== "NO_ERROR") {
+          reject(new Error(response));
+        } else {
+          resolve(true);
+        }
+      };
+
+      this.on(responseEvent, eventHandler);
+
+      timeout = setTimeout(() => {
+        eventHandler(null);
+      }, maxTimeout);
+    });
+
+    dg.makeRespondRawRequest(groupAddress, value, bitlength);
+    this.queueRequest("outbound_" + dg.getServiceType(), dg);
+
+    return resultPromise;
+  },
 });
