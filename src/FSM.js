@@ -95,6 +95,17 @@ module.exports = machina.Fsm.extend({
 
         if (!this._options.remoteEndpoint) {
           this._startSearch();
+        } else {
+          this.log.info(
+            "Using remoteControlEndpoint %s",
+            this._options.remoteEndpoint
+          );
+          const ipinfo = this._options.remoteEndpoint.split(":");
+          this._remoteControlEndpoint = {
+            addr: ipinfo[0],
+            port: ipinfo[1] || 3671,
+          };
+          this.transition("connecting");
         }
       },
       // create discovery/control endpoint
