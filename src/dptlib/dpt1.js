@@ -217,7 +217,7 @@ exports.subtypes = {
   100: {
     use: '???',
     name: 'DPT_Heat/Cool',
-    desc: 'heat/cool',
-    enc: { 0: '???', 1: '???' },
+    desc: 'cooling/heating',
+    enc: { 0: 'cooling', 1: 'heating' },
   },
 };
